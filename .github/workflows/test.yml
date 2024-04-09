@@ -2,18 +2,23 @@ name: CI
 
 on:
   workflow_dispatch:
-  
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Check if sender is a member of a team
-        if: contains(github.event.sender.teams.*.slug, 'whitelist')
+        id: check_team_membership
         run: |
-          echo "Sender is a member of the team. Proceeding with the workflow."
+          if(contains(github.event.sender.teams.*.slug, 'whitelist')) {
+            console.log("Sender is a member of the team. Proceeding with the workflow.");
+            process.exit(0);
+          } else {
+            console.log("Sender is not a member of the team. Exiting workflow.");
+            process.exit(1);
+          }
+
+      - name: Continue workflow if sender is a team member
+        if: steps.check_team_membership.outputs.status == 'success'
+        run: |
           # Add your workflow steps here
-      #- name: Stop the workflow if sender is not a member of the team
-        #if: github.event.sender.teams.every(team => team.slug != 'whitelist')
-        #run: |
-          #echo "Sender is not a member of the team. Exiting workflow."
-          #exit 1
