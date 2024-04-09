@@ -12,8 +12,8 @@ jobs:
         id: check_team_membership
         run: |
           # Retrieve team membership information for the sender
-          TEAM_MEMBERSHIP=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/orgs/your-organization/teams/your-team/memberships/${{ github.event.sender.login }}")
+          TEAM_MEMBERSHIP=$(curl -s -H "Authorization: Bearer ${{ secrets.TOKEN }}" \
+            "https://api.github.com/orgs/rakesh-gopala-org/teams/whitelist/memberships/${{ github.event.sender.login }}")
           
           # Check if the sender is a member of the team
           if [[ $(echo "$TEAM_MEMBERSHIP" | jq -r '.state') == "active" ]]; then
@@ -24,7 +24,7 @@ jobs:
             echo "::set-output name=is_team_member::false"
           fi
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
 
       - name: Stop workflow if user is not a team member
         if: steps.check_team_membership.outputs.is_team_member == 'false'
