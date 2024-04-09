@@ -14,7 +14,7 @@ jobs:
           username: ${{ github.actor }}
           team: whitelist
       - name: Stop workflow if user is no member
-        if: ${{ steps.teamAffiliation.outputs.isTeamMember == true }}
+        if: ${{ steps.teamAffiliation.outputs.isTeamMember == false }}
         run: |
           echo "You have no rights to trigger this job."
           exit 1
