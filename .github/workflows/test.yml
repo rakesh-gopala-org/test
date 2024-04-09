@@ -10,13 +10,14 @@ jobs:
       - name: Check if sender is a member of a team
         id: check_team_membership
         run: |
-          if(contains(github.event.sender.teams.*.slug, 'whitelist')) {
-            console.log("Sender is a member of the team. Proceeding with the workflow.");
-            process.exit(0);
-          } else {
-            console.log("Sender is not a member of the team. Exiting workflow.");
-            process.exit(1);
-          }
+          if: contains(github.event.sender.teams.*.slug, 'whitelist')
+          then
+            echo "Sender is a member of the team. Proceeding with the workflow."
+            exit 0
+          else
+            echo "Sender is not a member of the team. Exiting workflow."
+            exit 1
+          fi
 
       - name: Continue workflow if sender is a team member
         if: steps.check_team_membership.outputs.status == 'success'
