@@ -1,20 +1,33 @@
 name: Check user for team affiliation
+
 on:
-  workflow_dispatch
+  workflow_dispatch:
+
 jobs:
   check-user:
     name: Team affiliation
     runs-on: ubuntu-latest
     steps:
-      - name: Check user for team affiliation
-        uses: tspascoal/get-user-teams-membership@v2
-        id: teamAffiliation
-        with:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
-          username: ${{ github.actor }}
-          team: whitelist
-      - name: Stop workflow if user is no member
-        if: ${{ steps.teamAffiliation.outputs.isTeamMember == false }}
+      - name: Check if sender is a member of a team
+        id: check_team_membership
+        run: |
+          # Retrieve team membership information for the sender
+          TEAM_MEMBERSHIP=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/orgs/your-organization/teams/your-team/memberships/${{ github.event.sender.login }}")
+          
+          # Check if the sender is a member of the team
+          if [[ $(echo "$TEAM_MEMBERSHIP" | jq -r '.state') == "active" ]]; then
+            echo "Sender is a member of the team. Proceeding with the workflow."
+            echo "::set-output name=is_team_member::true"
+          else
+            echo "Sender is not a member of the team. Exiting workflow."
+            echo "::set-output name=is_team_member::false"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Stop workflow if user is not a team member
+        if: steps.check_team_membership.outputs.is_team_member == 'false'
         run: |
           echo "You have no rights to trigger this job."
           exit 1
