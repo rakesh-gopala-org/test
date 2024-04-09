@@ -1,19 +1,20 @@
-name: CI
-
+name: Check user for team affiliation
 on:
-  workflow_dispatch:
-
+  workflow_dispatch
 jobs:
-  build:
+  check-user:
+    name: Team affiliation
     runs-on: ubuntu-latest
     steps:
-      - name: Check if sender is a member of a team
-        id: check_team_membership
+      - name: Check user for team affiliation
+        uses: tspascoal/get-user-teams-membership@v2
+        id: teamAffiliation
+        with:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+          username: ${{ github.actor }}
+          team: whitelist
+      - name: Stop workflow if user is no member
+        if: ${{ steps.teamAffiliation.outputs.isTeamMember == false }}
         run: |
-          if contains(github.event.sender.teams.*.slug, 'whitelist'); then
-            echo "Sender is a member of the team. Proceeding with the workflow."
-            exit 0
-          else
-            echo "Sender is not a member of the team. Exiting workflow."
-            exit 1
-          fi
+          echo "You have no rights to trigger this job."
+          exit 1
