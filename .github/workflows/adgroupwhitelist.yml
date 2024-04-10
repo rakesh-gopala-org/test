@@ -13,6 +13,11 @@ jobs:
       run: |
         EMAIL=$(curl -s -H "Authorization: Bearer ${{ secrets.TOKEN}}" https://api.github.com/user/emails | jq -r '.[] | select(.primary == true).email')
         echo "::set-output name=email::$EMAIL"
+
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURECREDENTIALS }}
     
     - name: Retrieve Azure AD Object ID for Email
       id: get-user-object-id
@@ -22,13 +27,8 @@ jobs:
         echo "::set-output name=object_id::$OBJECT_ID"
       env:
         GITHUB_TOKEN: ${{ secrets.TOKEN }}
-        AZURE_CREDENTIALS: ${{ secrets.AZURECREDENTIALS }}    
+        AZURE_CREDENTIALS: ${{ secrets.AZURECREDENTIALS }}  
 
-    - name: Login to Azure
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.AZURECREDENTIALS }}
-    
     - name: Check Azure AD Group Membership
       id: check-group
       run: |
