@@ -29,7 +29,9 @@ jobs:
         
         # Set the primary email as an output
         echo "email=$PRIMARY_EMAIL" >> $GITHUB_ENV
-        
+      env:
+        GITHUB_TOKEN: ${{ secrets.TOKEN }} 
+
     - name: Login to Azure
       uses: azure/login@v1
       with:
@@ -42,8 +44,8 @@ jobs:
         OBJECT_ID=$(az ad user list --query "[?otherMails.contains(@, '${{ env.email }}')].objectId" -o tsv)
         echo "::set-output name=object_id::$OBJECT_ID"
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}  
+        GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        AZURE_CREDENTIALS: ${{ secrets.AZURECREDENTIALS }}  
 
     - name: Check Azure AD Group Membership
       id: check-group
