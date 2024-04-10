@@ -11,20 +11,30 @@ jobs:
     - name: Get Triggering User Email
       id: get-user-email
       run: |
-        EMAIL=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/user/emails | jq -r '.[] | select(.primary == true).email')
-        echo "::set-output name=email::$EMAIL"
-    
+        # Retrieve the email address associated with the authenticated GitHub user
+        EMAIL=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/user/emails)
+        echo "GitHub API Response:"
+        echo "$EMAIL"
+        
+        # Extract primary email using jq
+        PRIMARY_EMAIL=$(echo "$EMAIL" | jq -r '.[] | select(.primary == true) | .email')
+        echo "Primary Email Address:"
+        echo "$PRIMARY_EMAIL"
+        
+        # Set the primary email as an output
+        echo "email=$PRIMARY_EMAIL" >> $GITHUB_ENV
+        
     - name: Login to Azure
       uses: azure/login@v1
       with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
+        creds: ${{ secrets.AZURECREDENTIALS }}
     
     - name: Retrieve Azure AD Object ID for Email
       id: get-user-object-id
       run: |
         # Retrieve the object ID associated with the email address
-        OBJECT_ID=$(az ad user list --query "[?otherMails.contains(@, '${{ steps.get-user-email.outputs.email }}')].objectId" -o tsv)
-        echo "object_id=$OBJECT_ID"  >> $GITHUB_ENV
+        OBJECT_ID=$(az ad user list --query "[?otherMails.contains(@, '${{ env.email }}')].objectId" -o tsv)
+        echo "::set-output name=object_id::$OBJECT_ID"
       env:
         GITHUB_TOKEN: ${{ secrets.TOKEN }}
         AZURE_CREDENTIALS: ${{ secrets.AZURECREDENTIALS }}  
@@ -33,16 +43,11 @@ jobs:
       id: check-group
       run: |
         # Check group membership using the obtained object ID
-        az ad group member check --group 'AD-SEC-ALL-GLO-EOON-DEVELOPERS' --member-id "${{ env.object_id }}"
+        az ad group member check --group 'AD-SEC-ALL-GLO-EOON-DEVELOPERS' --member-id "${{ steps.get-user-object-id.outputs.object_id }}"
         
     - name: Execute Workflow based on Group Membership
       if: steps.check-group.outputs == 'true'
       run: |
         # Your workflow commands here
         echo "GitHub user's email is a member of the specified Azure AD group, proceeding with workflow execution."
-      
-    - name: Execute Workflow based on Group Membership
-      if: steps.check-group.outputs != 'true'
-      run: |
-        # Your workflow commands here
-        echo "GitHub user's email is not a member of the specified Azure AD group, skipping workflow execution."
+     
