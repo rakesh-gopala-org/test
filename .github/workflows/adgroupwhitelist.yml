@@ -40,6 +40,9 @@ jobs:
       run: |
         # Your workflow commands here
         echo "GitHub user's email is a member of the specified Azure AD group, proceeding with workflow execution."
-      else
+      
+    - name: Execute Workflow based on Group Membership
+      if: steps.check-group.outputs != 'true'
       run: |
+        # Your workflow commands here
         echo "GitHub user's email is not a member of the specified Azure AD group, skipping workflow execution."
