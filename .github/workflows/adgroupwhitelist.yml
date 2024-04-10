@@ -9,7 +9,7 @@ jobs:
     
     steps:
     - name: Get Triggering User Info
-      id: get-user
+      id: get-user-email
       run: |
         EMAIL=$(curl -s -H "Authorization: Bearer ${{ secrets.TOKEN}}" https://api.github.com/user/emails | jq -r '.[] | select(.primary == true).email')
         echo "::set-output name=email::$EMAIL"
