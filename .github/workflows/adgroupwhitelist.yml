@@ -24,7 +24,7 @@ jobs:
       run: |
         # Retrieve the object ID associated with the email address
         OBJECT_ID=$(az ad user show --id "${{ steps.get-user-email.outputs.email }}" --query objectId -o tsv)
-        echo "::set-output name=object_id::$OBJECT_ID"
+        echo "object_id=$OBJECT_ID" >> $GITHUB_ENV
       env:
         GITHUB_TOKEN: ${{ secrets.TOKEN }}
         AZURE_CREDENTIALS: ${{ secrets.AZURECREDENTIALS }}  
@@ -34,7 +34,7 @@ jobs:
       run: |
         # Query Azure AD to verify if the email address is a member of the group
         # Replace 'group_name' with the name of your Azure AD group
-        az ad group member check --group 'AD-SEC-ALL-GLO-EOON-DEVELOPERS' --member-id "${{ steps.get-user-object-id.outputs.object_id }}"
+        az ad group member check --group 'AD-SEC-ALL-GLO-EOON-DEVELOPERS' --member-id "${{ env.object_id }}"
         
     - name: Execute Workflow based on Group Membership
       if: steps.check-group.outputs == 'true'
