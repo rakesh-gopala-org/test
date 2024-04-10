@@ -41,7 +41,7 @@ jobs:
       id: get-user-object-id
       run: |
         # Retrieve the object ID associated with the email address
-        OBJECT_ID=$(az ad user list --query "[?otherMails.contains(@, '${{ env.email }}')].objectId" -o tsv)
+        OBJECT_ID=$(az ad user list --query "[?otherMails != null && contains(otherMails, '${{ env.email }}')].objectId" -o tsv)
         echo "::set-output name=object_id::$OBJECT_ID"
       env:
         GITHUB_TOKEN: ${{ secrets.TOKEN }}
