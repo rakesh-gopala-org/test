@@ -35,14 +35,14 @@ jobs:
     - name: Login to Azure
       uses: azure/login@v1
       with:
-        creds: ${{ secrets.AZURECREDENTIALS }}
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
     
     - name: Retrieve Azure AD Object ID for Email
       id: get-user-object-id
       run: |
         # Retrieve the object ID associated with the email address
         OBJECT_ID=$(az ad user list --query "[?otherMails != null && contains(otherMails, '${{ env.email }}')].objectId" -o tsv)
-        echo "::set-output name=object_id::$OBJECT_ID"
+        echo "object_id=$OBJECT_ID" >> $GITHUB_ENV
       env:
         GITHUB_TOKEN: ${{ secrets.TOKEN }}
         AZURE_CREDENTIALS: ${{ secrets.AZURECREDENTIALS }}  
@@ -51,7 +51,7 @@ jobs:
       id: check-group
       run: |
         # Check group membership using the obtained object ID
-        az ad group member check --group 'AD-SEC-ALL-GLO-EOON-DEVELOPERS' --member-id "${{ steps.get-user-object-id.outputs.object_id }}"
+        az ad group member check --group 'AD-SEC-ALL-GLO-EOON-DEVELOPERS' --member-id "${{ env.object_id }}"
         
     - name: Execute Workflow based on Group Membership
       if: steps.check-group.outputs == 'true'
