@@ -24,7 +24,7 @@ jobs:
       run: |
         # Query Azure AD to verify if the email address is a member of the group
         # Replace 'group_name' with the name of your Azure AD group
-        az ad group member check --group 'group_name' --member-id ${{ steps.get-user.outputs.email }}
+        az ad group member check --group 'AD-SEC-ALL-GLO-EOON-DEVELOPERS' --member-id ${{ steps.get-user.outputs.email }}
         
     - name: Execute Workflow based on Group Membership
       if: steps.check-group.outputs == 'true'
