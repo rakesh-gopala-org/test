@@ -41,11 +41,20 @@ jobs:
       id: get-user-object-id
       run: |
         # Retrieve the object ID associated with the email address
-        OBJECT_ID=$(az ad user list --query "[?otherMails != null && contains(otherMails, '${{ env.email }}')].objectId" -o tsv)
-        echo "object_id=$OBJECT_ID" >> $GITHUB_ENV
+        # Run the Azure CLI command and capture the output
+        $userInfo = az ad user show --id "${{ env.email }}"
+
+        # Convert the output to JSON
+        $userJson = $userInfo | ConvertFrom-Json
+
+        # Extract the user's ID
+        $userId = $userJson.id
+
+        echo "object_id=$userId" >> $GITHUB_ENV
       env:
         GITHUB_TOKEN: ${{ secrets.TOKEN }}
         AZURE_CREDENTIALS: ${{ secrets.AZURECREDENTIALS }}  
+      shell: pwsh
 
     - name: Check Azure AD Group Membership
       id: check-group
