@@ -50,7 +50,7 @@ jobs:
         # Extract the user's ID
         $userId = $userJson.id
 
-        echo "object_id=$userId" >> $GITHUB_ENV
+        Add-Content -Path $env:GITHUB_ENV -Value "object_id=$userId"
       env:
         GITHUB_TOKEN: ${{ secrets.TOKEN }}
         AZURE_CREDENTIALS: ${{ secrets.AZURECREDENTIALS }}  
