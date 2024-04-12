@@ -42,7 +42,7 @@ jobs:
       run: |
         # Retrieve the object ID associated with the email address
         # Run the Azure CLI command and capture the output
-        $userInfo = az ad user show --id "${{ env.email }}"
+        $userInfo = az ad user show --id "rakee233_gmail.com#EXT#@rahulgundamoutlook.onmicrosoft.com"
 
         # Convert the output to JSON
         $userJson = $userInfo | ConvertFrom-Json
